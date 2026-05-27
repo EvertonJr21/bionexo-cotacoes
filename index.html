@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bionexo · Análise de Cotações</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <span class="logo-mark">B</span>
+      <span class="logo-text">IONEXO<br><small>COTAÇÕES</small></span>
+    </div>
+    <nav class="nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" data-page="importar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar JSON
+      </a>
+      <a href="#" class="nav-item" data-page="analise">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Análise Mensal
+      </a>
+      <a href="#" class="nav-item" data-page="historico">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Histórico
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="db-status" id="db-status">
+        <span class="dot"></span> conectando...
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- PAGE: DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <div class="mes-selector">
+          <label>Mês visualizado</label>
+          <select id="select-mes-dash">
+            <option value="">— selecione —</option>
+          </select>
+        </div>
+      </div>
+      <div class="cards" id="dash-cards">
+        <div class="card skeleton"></div>
+        <div class="card skeleton"></div>
+        <div class="card skeleton"></div>
+        <div class="card skeleton"></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Distribuição por variação vs referência</div>
+          <canvas id="chart-dist" height="200"></canvas>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Top 10 maiores gastos (R$)</div>
+          <canvas id="chart-top10" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: IMPORTAR -->
+    <div class="page" id="page-importar">
+      <div class="page-header">
+        <h1>Importar JSON</h1>
+      </div>
+      <div class="import-area">
+        <div class="drop-zone" id="drop-zone">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Arraste o JSON aqui ou <label class="link" for="file-input">clique para selecionar</label></p>
+          <input type="file" id="file-input" accept=".json" style="display:none">
+          <small>Arquivo exportado do Bionexo — Relatório Analítico</small>
+        </div>
+
+        <div class="import-preview" id="import-preview" style="display:none">
+          <div class="preview-header">
+            <div>
+              <div class="preview-title" id="preview-title"></div>
+              <div class="preview-sub" id="preview-sub"></div>
+            </div>
+            <button class="btn-outline" id="btn-cancelar">Cancelar</button>
+          </div>
+
+          <div class="cards" id="preview-cards"></div>
+
+          <div class="alert" id="alert-duplicado" style="display:none">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Já existe um registro para este mês. Importar irá substituir os dados anteriores.
+          </div>
+
+          <div class="diff-panel" id="diff-panel" style="display:none">
+            <div class="panel-title">Diferenças em relação ao mês anterior</div>
+            <div id="diff-content"></div>
+          </div>
+
+          <div class="import-actions">
+            <button class="btn-primary" id="btn-importar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Confirmar importação
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: ANÁLISE -->
+    <div class="page" id="page-analise">
+      <div class="page-header">
+        <h1>Análise Mensal</h1>
+        <div class="mes-selector">
+          <label>Mês</label>
+          <select id="select-mes-analise">
+            <option value="">— selecione —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="negocia-banner" id="negocia-banner" style="display:none">
+        <div class="negocia-header">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <strong>Itens que vale negociar</strong>
+          <span class="badge-warn" id="badge-qtd-neg"></span>
+        </div>
+        <div class="negocia-nums" id="negocia-nums"></div>
+        <button class="btn-outline small" onclick="copiarItens()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar lista
+        </button>
+      </div>
+
+      <div class="controls">
+        <input type="text" id="busca" placeholder="Buscar produto..." oninput="renderTabela()">
+        <div class="control-group">
+          <label>Variação mínima: <strong id="pct-label">5%</strong></label>
+          <input type="range" min="0" max="65" step="1" value="5" id="pct-slider" oninput="document.getElementById('pct-label').textContent=this.value+'%';renderTabela()">
+        </div>
+        <div class="filter-btns">
+          <button class="filter-btn active" id="btn-todos" onclick="setFiltro('todos')">Todos</button>
+          <button class="filter-btn" id="btn-neg" onclick="setFiltro('neg')">Negociar</button>
+          <button class="filter-btn" id="btn-ok" onclick="setFiltro('ok')">OK</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="tabela">
+          <thead>
+            <tr>
+              <th>Seq</th>
+              <th>Produto</th>
+              <th>Qtde</th>
+              <th>Preço unit.</th>
+              <th>Ref. Bionexo</th>
+              <th>Var. vs ref.</th>
+              <th>Total (R$)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-body"></tbody>
+        </table>
+      </div>
+      <div class="rodape" id="rodape"></div>
+    </div>
+
+    <!-- PAGE: HISTÓRICO -->
+    <div class="page" id="page-historico">
+      <div class="page-header">
+        <h1>Histórico de Preços</h1>
+        <div class="mes-selector">
+          <label>Produto (código)</label>
+          <input type="text" id="hist-codigo" placeholder="Ex: 2006" oninput="buscarHistorico()">
+        </div>
+      </div>
+      <div id="hist-resultado">
+        <div class="empty-state">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <p>Digite o código de um produto para ver o histórico de preços mês a mês.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
