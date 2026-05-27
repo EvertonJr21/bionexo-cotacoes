@@ -234,6 +234,14 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px 22px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel canvas {
+  flex: 1;
+  min-height: 0;
 }
 
 .panel-title {
